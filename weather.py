@@ -88,6 +88,8 @@ def initArgumentParser():
     parser.add_argument('--imperial',
         dest='units', action = 'store_const', const='f', default = 'c',
         help = 'Get weather in imperial units.')
+    parser.add_argument('--now',
+        action = 'store_true', help = 'Print current time instead of the fetched one.')
 
     return parser
 
@@ -149,6 +151,8 @@ def main():
                 weatherData.setFormat(args.format)
             if (args.dateformat is not None):
                 weatherData.setDateFormat(args.dateformat)
+            if (args.now is True):
+                weatherData.time = datetime.now()
 
             if args.file:
                 appendDataToFile(weatherData, args.file)
