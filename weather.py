@@ -37,8 +37,9 @@ class WeatherData:
     speedUnit = None
 
     def __init__(self):
+        # Default values
         self.setDateFormat("%Y-%m-%d %H:%M")
-        self.setFormat("%c (%C),%d,%e,%T,%W")
+        self.setFormat("%d,%c (%C),%T,%W,%e")
 
     def setDateFormat(self, dateFormat):
         self._dateFormat = dateFormat
