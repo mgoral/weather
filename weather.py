@@ -24,6 +24,7 @@ import urllib.request
 import urllib.error
 import xml.etree.ElementTree as et
 from string import Template
+from datetime import datetime
 
 args = None
 
@@ -38,7 +39,11 @@ class WeatherData:
     speedUnit = None
 
     def __init__(self):
+        self.setDateFormat("%Y-%m-%d %H:%M")
         self.setFormat("%c (%C),%d,%e,%T,%W")
+
+    def setDateFormat(self, dateFormat):
+        self._dateFormat = dateFormat
 
     def setFormat(self, stringFormat):
         """
@@ -55,13 +60,12 @@ class WeatherData:
         stringFormat = stringFormat.replace('$', '$$')
         stringFormat = stringFormat.replace("%", "$")
         self._format = Template(stringFormat)
-        pass
 
     def __str__(self):
         printMapping = {
             'c': self.city,
             'C': self.country,
-            'd': self.time,
+            'd': self.time.strftime(self._dateFormat),
             't': self.temperature,
             'T': "%s°%s" % (self.temperature, self.tempUnit),
             'w': self.windspeed,
@@ -80,7 +84,9 @@ def initArgumentParser():
     parser.add_argument('-f', '--file',
         help = 'Append results to a file instead of stdout.')
     parser.add_argument('-F', '--format',
-        default = None, help = 'Output weather in specified format.')
+        default = None, help = 'Output weather in specified format (see: README).')
+    parser.add_argument('-D', '--dateformat',
+        default = None, help = 'Format of output date/time (see: \'man strftime\')')
     parser.add_argument('--imperial',
         dest='units', action = 'store_const', const='f', default = 'c',
         help = 'Get weather in imperial units.')
@@ -118,7 +124,8 @@ def parseWeather(data):
     weatherData = WeatherData()
     weatherData.city = location.attrib["city"]
     weatherData.country = location.attrib["country"]
-    weatherData.time = date.text
+    # Fri, 15 Nov 2013 12:59 pm CET
+    weatherData.time = datetime.strptime(date.text, "%a, %d %b %Y %I:%M %p %Z")
     weatherData.temperature = condition.attrib["temp"]
     weatherData.desc = condition.attrib["text"]
     weatherData.windspeed = wind.attrib["speed"]
@@ -140,6 +147,9 @@ def main():
             weatherData = parseWeather(weatherXml)
             if (args.format is not None):
                 weatherData.setFormat(args.format)
+            if (args.dateformat is not None):
+                weatherData.setDateFormat(args.dateformat)
+
             print(weatherData)
 
 if __name__ == "__main__":
