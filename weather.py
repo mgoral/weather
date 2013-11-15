@@ -26,8 +26,6 @@ import xml.etree.ElementTree as et
 from string import Template
 from datetime import datetime
 
-args = None
-
 class WeatherData:
     city = None
     country = None
@@ -93,8 +91,8 @@ def initArgumentParser():
 
     return parser
 
-def downloadWeather(location):
-    address = "http://weather.yahooapis.com/forecastrss?w=%s&u=%s" % (location, args.units)
+def downloadWeather(location, units):
+    address = "http://weather.yahooapis.com/forecastrss?w=%s&u=%s" % (location, units)
     try:
         resp = urllib.request.urlopen(address)
     except urllib.error.URLError as e:
@@ -102,6 +100,10 @@ def downloadWeather(location):
         return None
     weather = resp.readall().decode('utf-8')
     return weather
+
+def appendDataToFile(data, filename):
+    with open(filename, 'a') as file_:
+        file_.write("%s\n" % str(data))
 
 def parseWeather(data):
     xmlnsFound = re.findall(r'xmlns:(\w+)="([^"]+?)"', data)
@@ -137,12 +139,10 @@ def parseWeather(data):
 
 def main():
     parser = initArgumentParser()
-
-    global args
     args = parser.parse_args()
 
     for location in args.locations:
-        weatherXml = downloadWeather(location)
+        weatherXml = downloadWeather(location, args.units)
         if weatherXml is not None:
             weatherData = parseWeather(weatherXml)
             if (args.format is not None):
@@ -150,7 +150,10 @@ def main():
             if (args.dateformat is not None):
                 weatherData.setDateFormat(args.dateformat)
 
-            print(weatherData)
+            if args.file:
+                appendDataToFile(weatherData, args.file)
+            else:
+                print(weatherData)
 
 if __name__ == "__main__":
     try:
