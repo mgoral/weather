@@ -46,7 +46,7 @@ class WeatherData:
 
     def setFormat(self, stringFormat):
         """
-        Format specification:
+        Weather format specification:
         %c - city
         %C - country
         %d - date with time
@@ -55,6 +55,8 @@ class WeatherData:
         %w - windspeed (without units)
         %W - windspeed (with units)
         %e - description
+
+        Example: "%t: %W, %e" gives: "5: 22 km/h, Fog"
         """
         stringFormat = stringFormat.replace('$', '$$')
         stringFormat = stringFormat.replace("%", "$")
